@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "administratorLoginName": {
+      "value": "GEN-UNIQUE-8"
+    },
+    "administratorLoginPassword": {
+      "value": "GEN-PASSWORD-12"
+    },
+    "clusterName": {
+      "value": "GEN-UNIQUE-6"
+    },
+    "clusterLoginUserName": {
+      "value": "GEN-UNIQUE-8"
+    },
+    "clusterLoginPassword": {
+      "value": "GEN-PASSWORD-12"
+    }
+  }
+}
