@@ -1,0 +1,363 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+            "administratorLoginName": {
+            "type": "string"
+            },
+            "administratorLoginPassword": {
+            "type": "securestring"
+            },
+             "clusterName": {
+            "type": "string"
+            },
+             "clusterLoginUserName": {
+            "type": "string"
+            },
+             "clusterLoginPassword": {
+            "type": "securestring"
+            }
+    },
+
+    "variables": {
+        "storageAccountType":"Standard_LRS",
+        "publicIpAddressType":"Dynamic",
+        "networkSecurityGroupName":"ivm-nsg", 
+         "jumpVMpublicIpAddressName":"jumpVM-pip",
+         "rServerpublicIpAddressName": "rServer-pip",
+         "subnetPrefix":"10.0.0.0/24",
+         "subnetName":"ivm-subnet",
+         "addressPrefix":"10.0.0.0/24",
+         "virtualNetworkName":"ivm-vnet",
+         "jumpVMnetworkInterfaceName":"jumpvm-nic",
+        "rServernetworkInterfaceName":"rserver-nic",
+         "jumpVMvirtualMachineSize":"Standard_DS3_v2",
+         "storageAccountName":"[concat('hdstr',uniquestring(resourceGroup().id))]",
+        "jumpVMdnsName": "[concat('jump',uniqueString(resourceGroup().id))]",
+        "rServerdnsName": "[concat('rvm',uniqueString(resourceGroup().id))]",
+        "sshUserName":"remoteuser",
+        "sshPassword":"[parameters('clusterLoginPassword')]",
+        "clusterKind":"RSERVER",
+        "clusterVersion":"3.6",
+        "DataScienceVmStorageAccountType":"Standard_LRS",
+        "jumpvirtualMachineName":"Jump-VM"
+       },
+    "resources": [
+        {
+            "name": "[variables('virtualNetworkName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2017-08-01",
+            "location": "[resourceGroup().location]",
+             "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/',variables('networkSecurityGroupName'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+         {
+            "name": "[variables('jumpVMpublicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2017-08-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIpAllocationMethod": "[variables('publicIpAddressType')]",
+                 "dnsSettings": {
+                    "domainNameLabel": "[variables('jumpVMdnsName')]"
+                }
+            }
+        },
+        {
+            "name": "[variables('networkSecurityGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2017-06-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Jupyter",
+                        "properties": {
+                            "priority": 1010,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "9999"
+                        }
+                    },
+                    {
+                        "name": "MSSQL",
+                        "properties": {
+                            "priority": 1020,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "1433"
+                        }
+                    },
+                    {
+                        "name": "default-allow-rdp",
+                        "properties": {
+                            "priority": 1030,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "3389"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[variables('jumpVMnetworkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2016-09-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+                "[concat('Microsoft.Network/publicIpAddresses/', variables('jumpVMpublicIpAddressName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('virtualNetworkName'), variables('subnetName'))]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('jumpVMpublicIpAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                }
+            }
+        },
+        {
+            "name": "[variables('jumpvirtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[resourceGroup().location]",
+            "plan": {
+                "name": "windows2016",
+                "publisher": "microsoft-ads",
+                "product": "windows-data-science-vm"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('jumpVMnetworkInterfaceName'))]"
+                ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "[variables('jumpvirtualMachineName')]",
+                    "adminUsername": "[parameters('administratorLoginName')]",
+                    "adminPassword": "[parameters('administratorLoginPassword')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "true"
+                    }
+                },
+                "hardwareProfile": {
+                    "vmSize": "[variables('jumpVMvirtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "microsoft-ads",
+                        "offer": "windows-data-science-vm",
+                        "sku": "windows2016",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[variables('DataScienceVmStorageAccountType')]"
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('jumpVMnetworkInterfaceName'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
+            }
+        },
+             {
+            "apiVersion": "2015-03-01-preview",
+            "name": "[parameters('clusterName')]",
+            "type": "Microsoft.HDInsight/clusters",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+            ],
+            "properties": {
+                "clusterVersion": "[variables('clusterVersion')]",
+                "osType": "Linux",
+                "tier": "standard",
+                "clusterDefinition": {
+                    "kind": "[variables('clusterKind')]",
+                    "configurations": {
+                        "gateway": {
+                            "restAuthCredential.isEnabled": true,
+                            "restAuthCredential.username": "[parameters('clusterLoginUserName')]",
+                            "restAuthCredential.password": "[parameters('clusterLoginPassword')]"
+                        },
+                        "rserver": {
+                            "rstudio": true
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "storageaccounts": [
+                        {
+                            "name": "[concat(variables('storageAccountName'),'.blob.core.windows.net')]",
+                            "isDefault": true,
+                            "container": "hackathoncluster",
+                            "key": "[listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1]"
+                        }
+                    ]
+                },
+                "computeProfile": {
+                    "roles": [
+                        {
+                            "name": "headnode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 2,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D12_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": []
+                        },
+                        {
+                            "name": "workernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 1,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D12_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": []
+                        },
+                        {
+                            "name": "zookeepernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 3,
+                            "hardwareProfile": {
+                                "vmSize": "Medium"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": []
+                        },
+                        {
+                            "name": "edgenode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 1,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D12_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[variables('sshUserName')]",
+                                    "password": "[variables('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": null,
+                            "scriptActions": []
+                        }
+                    ]
+                }
+            }
+        }
+        
+    ],
+    "outputs": {
+        "jumpVMDNSName": {
+            "type": "String",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',variables('jumpVMpublicIpAddressName'))).dnsSettings.fqdn]"
+        },
+        "JumpVMUsername": {
+            "type": "String",
+            "value": "[parameters('administratorLoginName')]"
+        },
+         "JumpVMPassword": {
+            "type": "String",
+            "value": "[parameters('administratorLoginPassword')]"
+        },
+         "hdInsightURL": {
+            "type": "String",
+            "value": "[concat(parameters('clusterName'),'-ssh.azurehdinsight.net')]"
+        },
+         "hdInsightClusterUsername": {
+            "type": "String",
+            "value": "[parameters('clusterLoginUserName')]"
+        },
+         "hdInsightClusterPassword": {
+            "type": "String",
+            "value": "[parameters('clusterLoginPassword')]"
+        },
+         "hdInsightSSHUserName": {
+            "type": "String",
+            "value": "[concat(variables('sshUserName'),'@',parameters('clusterName'),'-ssh.azurehdinsight.net')]"
+        },
+         "hdInsightSSHPassword": {
+            "type": "String",
+            "value": "[variables('sshPassword')]"
+        }
+    }
+               }
+
