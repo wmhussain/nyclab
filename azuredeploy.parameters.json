@@ -6,7 +6,7 @@
       "value": "GEN-UNIQUE-8"
     },
     "administratorLoginPassword": {
-      "value": "GEN-PASSWORD-12"
+      "value": "GEN-PASSWORD"
     },
     "clusterName": {
       "value": "GEN-UNIQUE-6"
@@ -15,7 +15,7 @@
       "value": "GEN-UNIQUE-8"
     },
     "clusterLoginPassword": {
-      "value": "GEN-PASSWORD-12"
+      "value": "GEN-PASSWORD"
     }
   }
 }
