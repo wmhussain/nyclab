@@ -16,6 +16,12 @@
     },
     "clusterLoginPassword": {
       "value": "GEN-PASSWORD"
+    },
+     "datalakename": {
+       "value": "GEN-UNIQUE-6"
+     },
+    "servicePrincipalObjectId":{
+      "value": "GET-SERVICEPRINCIPAL-OBJECT-ID"
     }
   }
 }
