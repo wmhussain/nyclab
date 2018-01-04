@@ -7,3 +7,6 @@ $lab2 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/Lab%202.z
 Invoke-WebRequest -Uri "$lab1" -OutFile "C:\Packages\Lab01.zip"
 Invoke-WebRequest -Uri "$lab2" -OutFile "C:\Packages\Lab02.zip"
 
+$adl = "https://download.microsoft.com/download/7/F/4/7F420C7D-5654-4DEE-97C6-130B31E2F317/AdlCopy.msi"
+Invoke-WebRequest -Uri "$lab1" -OutFile "C:\Packages\AdlCopy.msi"
+msiexec.exe /i C:\Packages\AdlCopy.msi  /qn
