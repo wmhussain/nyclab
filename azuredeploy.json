@@ -16,6 +16,12 @@
             },
              "clusterLoginPassword": {
             "type": "securestring"
+            },
+            "datalakename": {
+            "type": "string"
+            },
+            "servicePrincipalObjectId":{
+                "type": "string"
             }
     },
 
@@ -43,6 +49,20 @@
         "jumpvirtualMachineName":"Jump-VM"
        },
     "resources": [
+        {
+            "apiVersion": "2016-11-01",
+            "name": "[parameters('datalakename')]",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.DataLakeStore/accounts",
+            "properties": {
+                "newTier": "Consumption",
+                "initialUser": "[parameters('servicePrincipalObjectId')]",
+                "encryptionState": "Enabled",
+                "encryptionConfig": {
+                    "type": "ServiceManaged"
+                }
+            }
+        },
         {
             "name": "[variables('virtualNetworkName')]",
             "type": "Microsoft.Network/virtualNetworks",
