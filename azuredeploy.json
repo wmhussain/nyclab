@@ -50,7 +50,7 @@
         "jumpvirtualMachineName":"Jump-VM",
         "scriptFolder": "scripts/",
         "scriptFileName": "envcreate.ps1",
-        "ScriptPath": "[concat(parameters('_artifactsLocation'), variables('scriptFolder'), variables('scriptFileName'), parameters('_artifactsLocationSasToken'))]",
+        "ScriptPath": "[concat(parameters('_artifactsLocation'), variables('scriptFolder'), variables('scriptFileName'), parameters('_artifactsLocationSasToken'))]"
        },
     "resources": [
         {
@@ -239,7 +239,7 @@
         }
       }
     }
-     ]
+     ],
                 "hardwareProfile": {
                     "vmSize": "[variables('jumpVMvirtualMachineSize')]"
                 },
