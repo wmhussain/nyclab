@@ -11,7 +11,6 @@ $adl = "https://download.microsoft.com/download/7/F/4/7F420C7D-5654-4DEE-97C6-13
 Invoke-WebRequest -Uri "$lab1" -OutFile "C:\Packages\AdlCopy.msi"
 msiexec.exe /i C:\Packages\AdlCopy.msi  /qn
 
-$dataset1 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/yellow_tripdata_2016-01.csv"
 $dataset2 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/yellow_tripdata_2016-02.csv"
 $dataset3 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/yellow_tripdata_2016-03.csv"
 $dataset4 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/yellow_tripdata_2016-04.csv"
