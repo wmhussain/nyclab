@@ -39,6 +39,7 @@
         "rServernetworkInterfaceName":"rserver-nic",
          "jumpVMvirtualMachineSize":"Standard_DS3_v2",
          "storageAccountName":"[concat('hdstr',uniquestring(resourceGroup().id))]",
+        "blobstorageAccountName":"[concat('blob',uniquestring(resourceGroup().id))]",
         "jumpVMdnsName": "[concat('jump',uniqueString(resourceGroup().id))]",
         "rServerdnsName": "[concat('rvm',uniqueString(resourceGroup().id))]",
         "sshUserName":"remoteuser",
@@ -61,6 +62,15 @@
                 "encryptionConfig": {
                     "type": "ServiceManaged"
                 }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('blobstorageAccountName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
             }
         },
         {
