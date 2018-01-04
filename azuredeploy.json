@@ -226,6 +226,9 @@
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(variables('jumpvirtualMachineName'),'/customscript')]",
       "location": "[resourceGroup().location]",
+          "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('jumpvirtualMachineName'))]"
+              ],
       "tags": {
         "displayName": "script"
       },
