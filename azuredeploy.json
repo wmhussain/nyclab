@@ -220,16 +220,7 @@
             "dependsOn": [
                 "[concat('Microsoft.Network/networkInterfaces/', variables('jumpVMnetworkInterfaceName'))]"
                 ],
-            "properties": {
-                "osProfile": {
-                    "computerName": "[variables('jumpvirtualMachineName')]",
-                    "adminUsername": "[parameters('administratorLoginName')]",
-                    "adminPassword": "[parameters('administratorLoginPassword')]",
-                    "windowsConfiguration": {
-                        "provisionVmAgent": "true"
-                    }
-                },
-                 "resources": [ 
+            "resources": [ 
      {
       "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -254,6 +245,15 @@
       }
     }
      ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "[variables('jumpvirtualMachineName')]",
+                    "adminUsername": "[parameters('administratorLoginName')]",
+                    "adminPassword": "[parameters('administratorLoginPassword')]",
+                    "windowsConfiguration": {
+                        "provisionVmAgent": "true"
+                    }
+                },
                 "hardwareProfile": {
                     "vmSize": "[variables('jumpVMvirtualMachineSize')]"
                 },
