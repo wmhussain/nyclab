@@ -47,7 +47,10 @@
         "clusterKind":"RSERVER",
         "clusterVersion":"3.6",
         "DataScienceVmStorageAccountType":"Standard_LRS",
-        "jumpvirtualMachineName":"Jump-VM"
+        "jumpvirtualMachineName":"Jump-VM",
+        "scriptFolder": "scripts/",
+        "scriptFileName": "envcreate.ps1",
+        "ScriptPath": "[concat(parameters('_artifactsLocation'), variables('scriptFolder'), variables('scriptFileName'), parameters('_artifactsLocationSasToken'))]",
        },
     "resources": [
         {
@@ -239,6 +242,29 @@
                 }
             }
         },
+        {
+      "apiVersion": "2017-12-01",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('jumpvirtualMachineName'),'/customscript')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "script"
+      },
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "CustomScriptExtension",
+        "typeHandlerVersion": "1.8",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[variables('ScriptPath')]"
+          ]
+        },
+        "protectedSettings": {
+          "commandToExecute": "[concat( 'powershell -noninteractive -executionpolicy bypass -file ', variables('scriptFileName'), ' >> script.log 2>&1' )]"
+        }
+      }
+    }
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('storageAccountName')]",
