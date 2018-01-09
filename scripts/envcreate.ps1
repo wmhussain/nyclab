@@ -4,8 +4,11 @@ msiexec.exe /i C:\Packages\IntegrationRuntime.msi  /qn
 
 $lab1 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/Lab%201.zip"
 $lab2 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/Lab%202.zip"
+$lab3 = "https://spektraazurelabs.blob.core.windows.net/azureanalytics/Lab%203.zip"
 Invoke-WebRequest -Uri "$lab1" -OutFile "C:\Packages\Lab01.zip"
 Invoke-WebRequest -Uri "$lab2" -OutFile "C:\Packages\Lab02.zip"
+Invoke-WebRequest -Uri "$lab3" -OutFile "C:\Packages\Lab03.zip"
+
 
 $adl = "https://download.microsoft.com/download/7/F/4/7F420C7D-5654-4DEE-97C6-130B31E2F317/AdlCopy.msi"
 Invoke-WebRequest -Uri "$lab1" -OutFile "C:\Packages\AdlCopy.msi"
